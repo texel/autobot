@@ -15,7 +15,12 @@
 
   _.extend(Autobot.Story.prototype, {
     run: function ( startAt ) {
-
+      
+    },
+    
+    next: function () {
+      this.currentStep = this.steps.unshift();
+      this.currentStep.run();
     }
   });
 
@@ -25,7 +30,36 @@
     }
 
     this.action = options.action;
+
+    // poll defaults to true
+    if ('poll' in options) {
+      this.poll = options.poll;
+    }
+    else {
+      this.poll = true;
+    }
+
+    // By default, poll every 200ms
+    this.interval = options.interval || 200;
   };
+
+  _.extend(Autobot.Step.prototype, {
+    run: function () {
+      if (this.when && this.when(this)) {
+        this.action(this);
+      }
+      else if (this.poll) {
+        this.intervalId = setInterval(this.poll, this.interval);
+      }
+    },
+
+    poll: function () {
+      if (this.when(this)) {
+        clearInterval(this.intervalId);
+        this.action(this);
+      }
+    }
+  });
 
   this.Autobot = Autobot;
 })(this);

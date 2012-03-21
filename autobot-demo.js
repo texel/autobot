@@ -4,32 +4,12 @@
 // Register a simple callback
 
 $( function () {
-  return;
 
-  Autobot.register({
-    when: function () {
-      return $('h1').length;
-    },
-
-    action: function () {
-      console.log("there is an h1 on the page!");
-    }
-  });
-
-  Autobot.register({
-    when: function () {
-      return $('p').length;
-    },
-
-    action: function () {
-      console.log('definitely a p tag, too');
-    }
-  });
-
-  var exampleStory = new Autobot.story([
+  var exampleStory = new Autobot.Story([
     {
       action: function (story) {
         // Perform the first step, no matter what
+        console.log('performing the first action');
       }
     },
     {
@@ -38,8 +18,13 @@ $( function () {
         /* Perform the second step */
 
       }
+    },
+    {
+      when: function (story) { /* Some other predicate */ },
+      action: function (story) { /* do the last thing */ },
+      poll: false // Don't keep checking to see if the condition is met.
     }
   ]);
 
-  exampleStory.run(2);
+  exampleStory.run(1);
 });
