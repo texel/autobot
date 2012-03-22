@@ -1,15 +1,17 @@
 Autobot = {}
 
 class Autobot.Story
-  constructor: (steps) ->
-    @steps = [];
+  constructor: (options) ->
+    @steps = []
+    @onComplete = options.onComplete
+    @onCancel   = options.onCancel
 
-    # Should use a comprehension here
-    _.each steps, (step, index) =>
+    stepDefinitions = options.steps || []
+
+    for step in stepDefinitions
       # Add a reference to this story, so the steps
       # can call back...
-      step = _.extend(step, {story: this})
-
+      step = _.extend(step, story: this)
       @steps.push(new Autobot.Step(step))
 
   run: (startAt) ->
@@ -20,6 +22,7 @@ class Autobot.Story
 
 class Autobot.Step
   constructor: (options) ->
+    @before     = options.before
     @when       = options.when
     @action     = options.action
     @shouldPoll = options.poll ? true
@@ -27,6 +30,8 @@ class Autobot.Step
     @story      = options.story
 
   run: ->
+    @before(this) if @before
+
     if @when
       if @when(this)
         @action(this)

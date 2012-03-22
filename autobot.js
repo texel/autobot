@@ -3,14 +3,19 @@
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   Autobot = {};
   Autobot.Story = (function() {
-    function Story(steps) {
+    function Story(options) {
+      var step, stepDefinitions, _i, _len;
       this.steps = [];
-      _.each(steps, __bind(function(step, index) {
+      this.onComplete = options.onComplete;
+      this.onCancel = options.onCancel;
+      stepDefinitions = options.steps || [];
+      for (_i = 0, _len = stepDefinitions.length; _i < _len; _i++) {
+        step = stepDefinitions[_i];
         step = _.extend(step, {
           story: this
         });
-        return this.steps.push(new Autobot.Step(step));
-      }, this));
+        this.steps.push(new Autobot.Step(step));
+      }
     }
     Story.prototype.run = function(startAt) {
       return this.next();
@@ -25,6 +30,7 @@
   Autobot.Step = (function() {
     function Step(options) {
       this.poll = __bind(this.poll, this);      var _ref;
+      this.before = options.before;
       this.when = options.when;
       this.action = options.action;
       this.shouldPoll = (_ref = options.poll) != null ? _ref : true;
@@ -32,6 +38,9 @@
       this.story = options.story;
     }
     Step.prototype.run = function() {
+      if (this.before) {
+        this.before(this);
+      }
       if (this.when) {
         if (this.when(this)) {
           this.action(this);

@@ -1,35 +1,39 @@
-// autobot-demo.js
-// For testing out the Autobot API
-
-// Register a simple callback
-
-$( function () {
-
-  var exampleStory = new Autobot.Story([
-    {
-      action: function (story) {
-        // Perform the first step, no matter what
-        console.log('Please type something in the field.');
+(function() {
+  var exampleStory, exports;
+  exampleStory = new Autobot.Story({
+    steps: [
+      {
+        action: function(story) {
+          return console.log('Please type something in the field.');
+        }
+      }, {
+        when: function(story) {
+          return $("#testField").val();
+        },
+        action: function(story) {
+          console.log("congratulations, you've written something in the text field!");
+          return console.log("now, make the field say 'bazonga'");
+        }
+      }, {
+        before: function(story) {
+          return console.log("executing this step before.");
+        },
+        when: function(story) {
+          return $("#testField").val() === 'bazonga';
+        },
+        action: function(story) {
+          return console.log("... and now we're done with the script.");
+        }
       }
+    ],
+    onComplete: function(story) {
+      return console.log("story complete");
     },
-    {
-      when: function (story) { 
-        /* User has performed the first step */
-        return $("#testField").val();
-      },
-      action: function (story) { 
-        /* Perform the second step */
-        console.log("congratulations, you've written something in the text field!");
-      }
-    },
-    {
-      action: function (story) { 
-        /* do the last thing */
-        console.log("... and now we're done with the script.");
-      }
+    onCancel: function(story) {
+      return console.log("story cancelled");
     }
-  ]);
-
+  });
   exampleStory.run(1);
-  window.exampleStory = exampleStory;
-});
+  exports = this;
+  exports.exampleStory = exampleStory;
+}).call(this);
