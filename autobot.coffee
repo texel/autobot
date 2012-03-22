@@ -6,22 +6,29 @@ class Autobot.Story
     @onComplete = options.onComplete
     @onCancel   = options.onCancel
 
+    @currentStepIndex = -1
+
     stepDefinitions = options.steps || []
 
-    for step in stepDefinitions
+    for stepDefinition in stepDefinitions
+      step = new Autobot.Step(stepDefinition)
+
       # Add a reference to this story, so the steps
       # can call back...
-      step = _.extend(step, story: this)
-      @steps.push(new Autobot.Step(step))
+      step.story = this
+      @steps.push(step)
 
   run: (startAt) ->
     @next() # TODO: support startAt
   next: ->
-    if @currentStep = @steps.shift()
+    @currentStepIndex += 1
+
+    if @currentStep = @steps[@currentStepIndex]
       @currentStep.run()
 
 class Autobot.Step
   constructor: (options) ->
+    @name       = options.name
     @before     = options.before
     @when       = options.when
     @action     = options.action

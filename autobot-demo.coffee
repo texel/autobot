@@ -4,6 +4,7 @@
 exampleStory = new Autobot.Story(
   steps: [
     {
+      name: "start"
       action: (story) ->
         # Perform the first step, no matter what
         console.log('Please type something in the field.')
@@ -16,14 +17,14 @@ exampleStory = new Autobot.Story(
       action: (story) ->
         # Perform the second step
         console.log("congratulations, you've written something in the text field!")
-        console.log("now, make the field say 'bazonga'")
+        console.log("now, make the field say 'bacon'")
     }
     {
       before: (story) ->
         console.log("executing this step before.")
 
       when: (story) ->
-        $("#testField").val() is 'bazonga'
+        $("#testField").val() is 'bacon'
 
       action: (story) ->
         # Do the last thing
