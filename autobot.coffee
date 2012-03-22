@@ -6,7 +6,7 @@ class Autobot.Story
     @onComplete = options.onComplete
     @onCancel   = options.onCancel
 
-    @currentStepIndex = -1
+    @currentStepIndex = 0
 
     stepDefinitions = options.steps || []
 
@@ -19,13 +19,36 @@ class Autobot.Story
       @steps.push(step)
 
   run: (startAt) ->
-    @next() # TODO: support startAt
-  next: ->
-    @currentStepIndex += 1
+    if startAt
+      startStep = @findStep(startAt)
+      console.log('found step', startStep)
+      @currentStepIndex = _.indexOf(@steps, @findStep(startAt))
 
+    @next()
+
+  next: ->
     if @currentStep = @steps[@currentStepIndex]
       @currentStep.run()
+    else
+      @onComplete?(this)
 
+    @currentStepIndex += 1
+
+  cancel: ->
+    @currentStep?.stop()
+    @onCancel?(this)
+
+  findStep: (nameOrIndex) ->
+    if _.isNumber(nameOrIndex)
+      @steps[nameOrIndex]
+    else
+      _.find @steps, (step) ->
+        step.name == nameOrIndex
+
+# Autobot.Step
+# Encapsulates the logic for one step in an Autobot story.
+# Able to poll continuously, to see if the "when" condition
+# is met.
 class Autobot.Step
   constructor: (options) ->
     @name       = options.name
@@ -37,22 +60,26 @@ class Autobot.Step
     @story      = options.story
 
   run: ->
-    @before(this) if @before
+    @before?(this)
 
     if @when
       if @when(this)
-        @action(this)
-        @story.next()
+        @execute()
       else if @shouldPoll
         @intervalId = setInterval(@poll, @interval)
     else
-      @action(this)
-      @story.next()
+      @execute()
+
+  stop: ->
+    clearInterval(@intervalId) if @intervalId
 
   poll: =>
     if @when(this)
-      clearInterval(@intervalId)
-      @action(this)
-      @story.next()
+      @stop()
+      @execute()
+
+  execute: ->
+    @action(this)
+    @story?.next()
 
 @Autobot = Autobot

@@ -3,6 +3,7 @@
   exampleStory = new Autobot.Story({
     steps: [
       {
+        name: "start",
         action: function(story) {
           return console.log('Please type something in the field.');
         }
@@ -12,14 +13,15 @@
         },
         action: function(story) {
           console.log("congratulations, you've written something in the text field!");
-          return console.log("now, make the field say 'bazonga'");
+          return console.log("now, make the field say 'bacon'");
         }
       }, {
+        name: "beforeText",
         before: function(story) {
           return console.log("executing this step before.");
         },
         when: function(story) {
-          return $("#testField").val() === 'bazonga';
+          return $("#testField").val() === 'bacon';
         },
         action: function(story) {
           return console.log("... and now we're done with the script.");
@@ -33,7 +35,7 @@
       return console.log("story cancelled");
     }
   });
-  exampleStory.run(1);
+  exampleStory.run('beforeText');
   exports = this;
   exports.exampleStory = exampleStory;
 }).call(this);

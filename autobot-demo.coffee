@@ -20,6 +20,7 @@ exampleStory = new Autobot.Story(
         console.log("now, make the field say 'bacon'")
     }
     {
+      name: "beforeText"
       before: (story) ->
         console.log("executing this step before.")
 
@@ -38,7 +39,7 @@ exampleStory = new Autobot.Story(
     console.log("story cancelled")
 )
 
-exampleStory.run(1)
+exampleStory.run("beforeText")
 
 exports = this
 exports.exampleStory = exampleStory
