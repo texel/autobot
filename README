@@ -1,0 +1,5 @@
+autobot.js
+
+A dead simple framework for automating linear events.
+
+Depends on underscore.js
