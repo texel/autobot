@@ -91,7 +91,7 @@ class Autobot.Step
       @execute()
 
   execute: ->
-    @action(this)
+    @action?(this)
     if @story
       @story.after()
       @story.currentStepIndex += 1

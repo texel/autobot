@@ -105,7 +105,9 @@
       }
     };
     Step.prototype.execute = function() {
-      this.action(this);
+      if (typeof this.action === "function") {
+        this.action(this);
+      }
       if (this.story) {
         this.story.after();
         this.story.currentStepIndex += 1;
