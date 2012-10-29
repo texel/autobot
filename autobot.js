@@ -5,7 +5,10 @@
   Autobot.Story = (function() {
     function Story(options) {
       var step, stepDefinition, stepDefinitions, _i, _len;
+      this.name = options.name;
       this.steps = [];
+      this.beforeEach = options.beforeEach;
+      this.afterEach = options.afterEach;
       this.onComplete = options.onComplete;
       this.onCancel = options.onCancel;
       this.currentStepIndex = 0;
@@ -27,14 +30,15 @@
       return this.next();
     };
     Story.prototype.next = function() {
-      if (this.currentStep = this.steps[this.currentStepIndex]) {
-        this.currentStep.run();
-      } else {
-        if (typeof this.onComplete === "function") {
-          this.onComplete(this);
-        }
+      var _ref;
+      if ((_ref = this.currentStep) != null) {
+        _ref.cleanup();
       }
-      return this.currentStepIndex += 1;
+      if (this.currentStep = this.steps[this.currentStepIndex]) {
+        return this.currentStep.run();
+      } else {
+        return typeof this.onComplete === "function" ? this.onComplete(this) : void 0;
+      }
     };
     Story.prototype.cancel = function() {
       var _ref;
@@ -42,6 +46,12 @@
         _ref.stop();
       }
       return typeof this.onCancel === "function" ? this.onCancel(this) : void 0;
+    };
+    Story.prototype.before = function() {
+      return typeof this.beforeEach === "function" ? this.beforeEach(this) : void 0;
+    };
+    Story.prototype.after = function() {
+      return typeof this.afterEach === "function" ? this.afterEach(this) : void 0;
     };
     Story.prototype.findStep = function(nameOrIndex) {
       if (_.isNumber(nameOrIndex)) {
@@ -66,6 +76,10 @@
       this.story = options.story;
     }
     Step.prototype.run = function() {
+      var _ref;
+      if ((_ref = this.story) != null) {
+        _ref.before();
+      }
       if (typeof this.before === "function") {
         this.before(this);
       }
@@ -91,9 +105,15 @@
       }
     };
     Step.prototype.execute = function() {
-      var _ref;
       this.action(this);
-      return (_ref = this.story) != null ? _ref.next() : void 0;
+      if (this.story) {
+        this.story.after();
+        this.story.currentStepIndex += 1;
+        return this.story.next();
+      }
+    };
+    Step.prototype.cleanup = function() {
+      return this.stop();
     };
     return Step;
   })();

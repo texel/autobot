@@ -2,6 +2,11 @@
 # For testing out the Autobot API
 
 exampleStory = new Autobot.Story(
+  name: "demo",
+  beforeEach: (story) ->
+    'execute before each step'
+  afterEach: (story) ->
+    'execute after each step'
   steps: [
     {
       name: "start"
@@ -39,7 +44,7 @@ exampleStory = new Autobot.Story(
     console.log("story cancelled")
 )
 
-exampleStory.run("beforeText")
+exampleStory.run()
 
 exports = this
 exports.exampleStory = exampleStory

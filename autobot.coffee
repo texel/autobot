@@ -2,7 +2,10 @@ Autobot = {}
 
 class Autobot.Story
   constructor: (options) ->
+    @name  = options.name
     @steps = []
+    @beforeEach = options.beforeEach
+    @afterEach  = options.afterEach
     @onComplete = options.onComplete
     @onCancel   = options.onCancel
 
@@ -27,16 +30,24 @@ class Autobot.Story
     @next()
 
   next: ->
+    # Before we get a new step, make sure we
+    # run cleanup on the current one
+    @currentStep?.cleanup()
+
     if @currentStep = @steps[@currentStepIndex]
       @currentStep.run()
     else
       @onComplete?(this)
 
-    @currentStepIndex += 1
-
   cancel: ->
     @currentStep?.stop()
     @onCancel?(this)
+
+  before: ->
+    @beforeEach?(this)
+
+  after: ->
+    @afterEach?(this)
 
   findStep: (nameOrIndex) ->
     if _.isNumber(nameOrIndex)
@@ -60,6 +71,7 @@ class Autobot.Step
     @story      = options.story
 
   run: ->
+    @story?.before()
     @before?(this)
 
     if @when
@@ -80,6 +92,13 @@ class Autobot.Step
 
   execute: ->
     @action(this)
-    @story?.next()
+    if @story
+      @story.after()
+      @story.currentStepIndex += 1
+      @story.next()
+
+  cleanup: ->
+    # If we're currently waiting, stop polling.
+    @stop()
 
 @Autobot = Autobot

@@ -1,6 +1,13 @@
 (function() {
   var exampleStory, exports;
   exampleStory = new Autobot.Story({
+    name: "demo",
+    beforeEach: function(story) {
+      return 'execute before each step';
+    },
+    afterEach: function(story) {
+      return 'execute after each step';
+    },
     steps: [
       {
         name: "start",
@@ -35,7 +42,7 @@
       return console.log("story cancelled");
     }
   });
-  exampleStory.run('beforeText');
+  exampleStory.run();
   exports = this;
   exports.exampleStory = exampleStory;
 }).call(this);
