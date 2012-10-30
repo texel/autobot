@@ -84,7 +84,7 @@
       this.before = options.before;
       this.waitBefore = options.waitBefore;
       this.action = options.action;
-      this.waitAfter = options.waitAfter;
+      this.waitAfter = options.waitAfter || options.wait;
       this.shouldPoll = (_ref = options.poll) != null ? _ref : true;
       this.interval = options.interval || 200;
       this.story = options.story;

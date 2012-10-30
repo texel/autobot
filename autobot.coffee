@@ -74,7 +74,7 @@ class Autobot.Step
     @before     = options.before
     @waitBefore = options.waitBefore # Pass true to wait until @next() is called on the story
     @action     = options.action
-    @waitAfter  = options.waitAfter
+    @waitAfter  = options.waitAfter || options.wait
     @shouldPoll = options.poll ? true
     @interval   = options.interval || 200
     @story      = options.story
