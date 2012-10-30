@@ -15,7 +15,7 @@
           return console.log('Please type something in the field.');
         }
       }, {
-        when: function(story) {
+        waitBefore: function(story) {
           return $("#testField").val();
         },
         action: function(story) {
@@ -27,7 +27,7 @@
         before: function(story) {
           return console.log("executing this step before.");
         },
-        when: function(story) {
+        waitBefore: function(story) {
           return $("#testField").val() === 'bacon';
         },
         action: function(story) {

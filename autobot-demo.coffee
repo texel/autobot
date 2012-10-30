@@ -15,7 +15,7 @@ exampleStory = new Autobot.Story(
         console.log('Please type something in the field.')
     }
     {
-      when: (story) ->
+      waitBefore: (story) ->
         # user has performed the first step
         $("#testField").val()
 
@@ -29,7 +29,7 @@ exampleStory = new Autobot.Story(
       before: (story) ->
         console.log("executing this step before.")
 
-      when: (story) ->
+      waitBefore: (story) ->
         $("#testField").val() is 'bacon'
 
       action: (story) ->

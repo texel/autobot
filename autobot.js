@@ -27,23 +27,30 @@
         console.log('found step', startStep);
         this.currentStepIndex = _.indexOf(this.steps, this.findStep(startAt));
       }
-      return this.next();
+      return this.executeCurrent();
     };
-    Story.prototype.next = function() {
+    Story.prototype.skip = function() {
       var _ref;
       if ((_ref = this.currentStep) != null) {
         _ref.cleanup();
       }
+      return this.next();
+    };
+    Story.prototype.executeCurrent = function() {
       if (this.currentStep = this.steps[this.currentStepIndex]) {
         return this.currentStep.run();
       } else {
         return typeof this.onComplete === "function" ? this.onComplete(this) : void 0;
       }
     };
+    Story.prototype.next = function() {
+      this.currentStepIndex += 1;
+      return this.executeCurrent();
+    };
     Story.prototype.cancel = function() {
       var _ref;
       if ((_ref = this.currentStep) != null) {
-        _ref.stop();
+        _ref.cleanup();
       }
       return typeof this.onCancel === "function" ? this.onCancel(this) : void 0;
     };
@@ -66,56 +73,89 @@
   })();
   Autobot.Step = (function() {
     function Step(options) {
-      this.poll = __bind(this.poll, this);      var _ref;
+      this.run = __bind(this.run, this);
+      this.next = __bind(this.next, this);
+      this.cleanup = __bind(this.cleanup, this);
+      this.execute = __bind(this.execute, this);
+      this.startPolling = __bind(this.startPolling, this);
+      this.stopPolling = __bind(this.stopPolling, this);      var _ref;
+      this.actionQueue = [];
       this.name = options.name;
       this.before = options.before;
-      this.when = options.when;
+      this.waitBefore = options.waitBefore;
       this.action = options.action;
+      this.waitAfter = options.waitAfter;
       this.shouldPoll = (_ref = options.poll) != null ? _ref : true;
       this.interval = options.interval || 200;
       this.story = options.story;
-    }
-    Step.prototype.run = function() {
-      var _ref;
-      if ((_ref = this.story) != null) {
-        _ref.before();
-      }
-      if (typeof this.before === "function") {
-        this.before(this);
-      }
-      if (this.when) {
-        if (this.when(this)) {
-          return this.execute();
-        } else if (this.shouldPoll) {
-          return this.intervalId = setInterval(this.poll, this.interval);
+      if (this.waitBefore) {
+        if (this.waitBefore === true) {
+          this.waitBefore = function() {
+            return false;
+          };
         }
-      } else {
-        return this.execute();
+        this.waitBeforeWrapper = __bind(function() {
+          return this.startPolling(this.waitBefore);
+        }, this);
       }
-    };
-    Step.prototype.stop = function() {
+      if (this.waitAfter) {
+        if (this.waitAfter === true) {
+          this.waitAfter = function() {
+            return false;
+          };
+        }
+        this.waitAfterWrapper = __bind(function() {
+          return this.startPolling(this.waitAfter);
+        }, this);
+      }
+      if (this.before) {
+        this.actionQueue.push(_.bind(this.execute, this, this.before));
+      }
+      if (this.waitBeforeWrapper) {
+        this.actionQueue.push(this.waitBeforeWrapper);
+      }
+      if (this.action) {
+        this.actionQueue.push(_.bind(this.execute, this, this.action));
+      }
+      if (this.waitAfterWrapper) {
+        this.actionQueue.push(this.waitAfterWrapper);
+      }
+      this.actionQueue.push(_.bind(this.execute, this, this.cleanup));
+    }
+    Step.prototype.stopPolling = function() {
       if (this.intervalId) {
         return clearInterval(this.intervalId);
       }
     };
-    Step.prototype.poll = function() {
-      if (this.when(this)) {
-        this.stop();
-        return this.execute();
-      }
+    Step.prototype.startPolling = function(f) {
+      var pollingFunction;
+      this.stopPolling();
+      pollingFunction = __bind(function() {
+        if (f(this)) {
+          this.stopPolling();
+          return this.next();
+        }
+      }, this);
+      return this.intervalId = setInterval(pollingFunction, this.interval);
     };
-    Step.prototype.execute = function() {
-      if (typeof this.action === "function") {
-        this.action(this);
-      }
-      if (this.story) {
+    Step.prototype.execute = function(f) {
+      f();
+      return this.next();
+    };
+    Step.prototype.cleanup = function() {
+      return this.stopPolling();
+    };
+    Step.prototype.next = function() {
+      var currentAction;
+      if (currentAction = this.actionQueue.shift()) {
+        return currentAction();
+      } else if (this.story) {
         this.story.after();
-        this.story.currentStepIndex += 1;
         return this.story.next();
       }
     };
-    Step.prototype.cleanup = function() {
-      return this.stop();
+    Step.prototype.run = function() {
+      return this.next();
     };
     return Step;
   })();
